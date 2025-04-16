@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import base64
@@ -10,6 +10,7 @@ app = FastAPI()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 RECEIVED_BLOCKS_DIR = os.path.abspath(os.path.join(BASE_DIR, '../received_blocks'))
+PROCESSED_BLOCKS_DIR = os.path.abspath(os.path.join(BASE_DIR, '../processed_blocks'))
 
 class BlockPhoto(BaseModel):
     filename: str
@@ -75,6 +76,24 @@ def download_block_file(block_id: str, filename: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Dosya bulunamadı")
     return FileResponse(file_path)
+
+@app.post("/processed_blocks/{block_id}/upload_glb")
+def upload_processed_block_glb(block_id: str, file: UploadFile = File(...)):
+    os.makedirs(PROCESSED_BLOCKS_DIR, exist_ok=True)
+    block_dir = os.path.join(PROCESSED_BLOCKS_DIR, block_id)
+    os.makedirs(block_dir, exist_ok=True)
+    glb_path = os.path.join(block_dir, "block.glb")
+    with open(glb_path, "wb") as f:
+        f.write(file.file.read())
+    return {"status": "success", "message": f"block.glb başarıyla işlendi dizinine yüklendi: {block_id}"}
+
+@app.get("/processed_blocks/{block_id}/block.glb")
+def get_processed_block_glb(block_id: str):
+    block_dir = os.path.join(PROCESSED_BLOCKS_DIR, block_id)
+    glb_path = os.path.join(block_dir, "block.glb")
+    if not os.path.exists(glb_path):
+        raise HTTPException(status_code=404, detail="block.glb bulunamadı")
+    return FileResponse(glb_path, media_type="model/gltf-binary")
 
 if __name__ == "__main__":
     import uvicorn
