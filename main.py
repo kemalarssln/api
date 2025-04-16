@@ -87,6 +87,12 @@ def receive_blocks(payload: BlocksPayload):
 # --- EKLENDİ: Tüm blokları listele ---
 @app.get("/blocks/list")
 def list_blocks():
+    if not os.path.exists(RECEIVED_BLOCKS_DIR):
+        return []
+    return os.listdir(RECEIVED_BLOCKS_DIR)
+
+@app.get("/processed_blocks/list")
+def list_processed_blocks():
     if not os.path.exists(PROCESSED_BLOCKS_DIR):
         return []
     return os.listdir(PROCESSED_BLOCKS_DIR)
