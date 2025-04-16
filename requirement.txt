@@ -1,5 +1,0 @@
-KARŞILAŞTIRMA OPERATORLERİ
-MUTLAKA BİR TRUE FALSE OLMALIDIR
-eğer fonksiyon hem 2 parametreli hem 3 parametreli çalışsın istiyorsak 3.parametreye = 0 olarak sabit bir değer atayabiliriz ve bu arttırılabilir 
-
-map fonksiyonu dizinin her elemanını tek tek fonksiyona göndermeye yarar
