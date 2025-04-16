@@ -1,10 +1,11 @@
-import json
 import os
-import base64
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import base64
 from typing import List
+import json
+import shutil
 
 app = FastAPI()
 
@@ -76,7 +77,28 @@ def download_block_file(block_id: str, filename: str):
         raise HTTPException(status_code=404, detail="Dosya bulunamadı")
     return FileResponse(file_path)
 
+@app.delete("/blocks/{block_id}")
+def delete_block(block_id: str):
+    block_dir = os.path.join(RECEIVED_BLOCKS_DIR, block_id)
+    if not os.path.exists(block_dir):
+        raise HTTPException(status_code=404, detail="Blok bulunamadı")
+    try:
+        shutil.rmtree(block_dir)
+        return {"status": "success", "message": f"Blok {block_id} ve tüm dosyaları silindi."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Silme hatası: {e}")
+
+@app.post("/blocks/{block_id}/upload_glb")
+def upload_block_glb(block_id: str, file: UploadFile = File(...)):
+    block_dir = os.path.join(RECEIVED_BLOCKS_DIR, block_id)
+    if not os.path.exists(block_dir):
+        raise HTTPException(status_code=404, detail="Blok bulunamadı")
+    glb_path = os.path.join(block_dir, "block.glb")
+    with open(glb_path, "wb") as f:
+        f.write(file.file.read())
+    return {"status": "success", "message": f"block.glb başarıyla yüklendi: {block_id}"}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port) 
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
