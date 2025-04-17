@@ -42,11 +42,23 @@ def receive_blocks(payload: BlocksPayload):
         # Boyutları kaydet
         with open(os.path.join(block_dir, "dimensions.json"), "w", encoding="utf-8") as f:
             json.dump(block.dimensions.dict(), f, ensure_ascii=False, indent=2)
-        # Fotoğrafları kaydet
+        # Fotoğrafları kaydet ve surfaceDims meta oluştur
+        photos_meta = []
         for photo in block.photos:
             photo_path = os.path.join(block_dir, photo.filename)
             with open(photo_path, "wb") as img_file:
                 img_file.write(base64.b64decode(photo.base64))
+            # surfaceDims varsa meta'ya ekle
+            surface_dims = getattr(photo, 'surfaceDims', None)
+            if surface_dims:
+                photos_meta.append({
+                    "filename": photo.filename,
+                    "surfaceDims": surface_dims
+                })
+        # Meta dosyasını kaydet
+        if photos_meta:
+            with open(os.path.join(block_dir, "photos_meta.json"), "w", encoding="utf-8") as f:
+                json.dump(photos_meta, f, ensure_ascii=False, indent=2)
     return {
         "status": "success",
         "message": f"{len(payload.blocks)} blok başarıyla kaydedildi."
