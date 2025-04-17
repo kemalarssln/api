@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import base64
@@ -75,6 +75,15 @@ def download_block_file(block_id: str, filename: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Dosya bulunamadı")
     return FileResponse(file_path)
+
+@app.post("/blocks/{block_id}/upload_glb")
+def upload_block_glb(block_id: str, file: UploadFile = File(...)):
+    block_dir = os.path.join(RECEIVED_BLOCKS_DIR, block_id)
+    os.makedirs(block_dir, exist_ok=True)
+    glb_path = os.path.join(block_dir, "block.glb")
+    with open(glb_path, "wb") as f:
+        f.write(file.file.read())
+    return {"status": "success", "message": "block.glb başarıyla yüklendi."}
 
 if __name__ == "__main__":
     import uvicorn
