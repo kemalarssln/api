@@ -14,7 +14,6 @@ RECEIVED_BLOCKS_DIR = os.path.abspath(os.path.join(BASE_DIR, '../received_blocks
 class BlockPhoto(BaseModel):
     filename: str
     base64: str
-    surfaceDims: list = None  # Opsiyonel, yüzey ölçüsü (örn. [250, 200])
 
 class BlockDimensions(BaseModel):
     width: float
